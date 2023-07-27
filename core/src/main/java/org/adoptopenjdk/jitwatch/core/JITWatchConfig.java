@@ -377,21 +377,24 @@ public class JITWatchConfig
 		}
 	}
 
-	private void loadCompressedOopsMode()
-	{
-		int param = Integer.parseInt(getProperty(loadedProps, KEY_SANDBOX_COMPRESSED_OOPS_MODE, "0"));
+	private void loadCompressedOopsMode() {
+		final String PROP_KEY_COMPRESSED_OOPS_MODE = "compressedOopsMode";
+		final int DEFAULT_COMPRESSED_OOPS_MODE = 0;
+		final int COMPRESSED_OOPS_FORCE_COMPRESSED = 1;
+		final int COMPRESSED_OOPS_FORCE_NO_COMPRESSED = 2;
 
-		switch (param)
-		{
-		case 0:
-			compressedOopsMode = CompressedOops.VM_DEFAULT;
-			break;
-		case 1:
-			compressedOopsMode = CompressedOops.FORCE_COMPRESSED;
-			break;
-		case 2:
-			compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
-			break;
+		int param = Integer.parseInt(getProperty(loadedProps, PROP_KEY_COMPRESSED_OOPS_MODE, String.valueOf(DEFAULT_COMPRESSED_OOPS_MODE)));
+
+		switch (param) {
+			case DEFAULT_COMPRESSED_OOPS_MODE:
+				compressedOopsMode = CompressedOops.VM_DEFAULT;
+				break;
+			case COMPRESSED_OOPS_FORCE_COMPRESSED:
+				compressedOopsMode = CompressedOops.FORCE_COMPRESSED;
+				break;
+			case COMPRESSED_OOPS_FORCE_NO_COMPRESSED:
+				compressedOopsMode = CompressedOops.FORCE_NO_COMPRESSED;
+				break;
 		}
 	}
 
