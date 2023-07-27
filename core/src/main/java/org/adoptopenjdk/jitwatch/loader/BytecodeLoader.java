@@ -349,7 +349,15 @@ public final class BytecodeLoader
 				section = performConstantPool(fqClassName, classBytecode, builder, section, msp, memberBytecode, line);
 				break;
 			case LINETABLE:
-				section = performLINETABLE(fqClassName, classBytecode, builder, section, msp, memberBytecode, line);
+				LineTableContext context = new LineTableContext();
+				context.setFqClassName(fqClassName);
+				context.setClassBytecode(classBytecode);
+				context.setBuilder(builder);
+				context.setSection(section);
+				context.setMsp(msp);
+				context.setMemberBytecode(memberBytecode);
+				context.setLine(line);
+				section = performLINETABLE(context);
 				break;
 			case RUNTIMEVISIBLEANNOTATIONS:
 				if (!isRunTimeVisibleAnnotation(line))
@@ -460,22 +468,25 @@ public final class BytecodeLoader
 		}
 	}
 
-	private static BytecodeSection performLINETABLE(String fqClassName, ClassBC classBytecode, StringBuilder builder,
-			BytecodeSection section, MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
-	{
-		if (line.startsWith("line "))
-		{
-			builder.append(line).append(C_NEWLINE);
-		}
-		else
-		{
-			sectionFinished(fqClassName, BytecodeSection.LINETABLE, msp, builder, memberBytecode, classBytecode);
+	private static BytecodeSection performLINETABLE(LineTableContext context) {
+		String fqClassName = context.getFqClassName();
+		ClassBC classBytecode = context.getClassBytecode();
+		StringBuilder builder = context.getBuilder();
+		BytecodeSection section = context.getSection();
+		MemberSignatureParts msp = context.getMsp();
+		MemberBytecode memberBytecode = context.getMemberBytecode();
+		String line = context.getLine();
 
+		if (line.startsWith("line ")) {
+			builder.append(line).append(C_NEWLINE);
+		} else {
+			sectionFinished(fqClassName, BytecodeSection.LINETABLE, msp, builder, memberBytecode, classBytecode);
 			section = changeSection(BytecodeSection.NONE);
 		}
 
 		return section;
 	}
+
 
 	private static BytecodeSection performEXCEPTIONTABLE(String fqClassName, ClassBC classBytecode, StringBuilder builder,
 			BytecodeSection section, MemberSignatureParts msp, MemberBytecode memberBytecode, String line)
