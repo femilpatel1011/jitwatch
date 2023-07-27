@@ -1,0 +1,6 @@
+Done.
+Total time (sec): 24
+Detecting code smells...
+Exporting analysis results...
+Done.
+Total time (sec): 24
