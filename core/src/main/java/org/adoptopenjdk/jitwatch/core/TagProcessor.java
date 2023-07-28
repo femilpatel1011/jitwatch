@@ -104,73 +104,68 @@ public class TagProcessor
 		topTag = null;
 	}
 
-	private Tag handleTag(String line)
-	{
+	private Tag handleTag(String line) {
 		Tag result = null;
 
-		if (DEBUG_LOGGING_TAGPROCESSOR)
-		{
+		if (DEBUG_LOGGING_TAGPROCESSOR) {
 			logger.debug("Handling line: {}", line);
 		}
 
 		// closing tag
-		if (line.charAt(1) == C_SLASH)
-		{
-			String closeName = line.substring(2, line.length() - 1);
-
-			if (DEBUG_LOGGING_TAGPROCESSOR)
-			{
-				logger.debug("closeName:{}, currentTag:{}, topTag:{}", closeName,
-						currentTag == null ? "null" : currentTag.getName(), topTag == null ? "null" : topTag.getName());
-			}
-
-			if (currentTag != null && closeName.equals(currentTag.getName()))
-			{
-				if (currentTag.getParent() == null)
-				{
-					result = currentTag;
-				}
-				else
-				{
-					currentTag = currentTag.getParent();
-				}
-				
-				if (JITWatchConstants.TAG_PARSE.equals(currentTag.getName()))
-				{
-					methodIDStack.pop();					
-				}				
-			}
-			else if (S_FRAGMENT.equals(closeName))
-			{
-				result = topTag;
-			}
-		}
-		else
-		{
-			boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
-
-			int indexEndName = line.indexOf(C_SPACE);
-
-			if (indexEndName == -1)
-			{
-				indexEndName = line.indexOf(C_CLOSE_ANGLE);
-
-				if (indexEndName > 0)
-				{
-					if (selfClosing)
-					{
-						indexEndName = line.length() - 2;
-					}
-				}
-			}
-
-			if (indexEndName != -1)
-			{
-				result = processValidLine(line, indexEndName, selfClosing);
-			}
+		if (line.charAt(1) == C_SLASH) {
+			result = handleClosingTag(line);
+		} else {
+			result = handleOpenTag(line);
 		}
 
 		return result;
+	}
+
+	private Tag handleClosingTag(String line) {
+		String closeName = line.substring(2, line.length() - 1);
+
+		if (DEBUG_LOGGING_TAGPROCESSOR) {
+			logger.debug("closeName:{}, currentTag:{}, topTag:{}", closeName,
+					currentTag == null ? "null" : currentTag.getName(), topTag == null ? "null" : topTag.getName());
+		}
+
+		if (currentTag != null && closeName.equals(currentTag.getName())) {
+			if (currentTag.getParent() == null) {
+				return currentTag;
+			} else {
+				currentTag = currentTag.getParent();
+			}
+
+			if (JITWatchConstants.TAG_PARSE.equals(currentTag.getName())) {
+				methodIDStack.pop();
+			}
+		} else if (S_FRAGMENT.equals(closeName)) {
+			return topTag;
+		}
+
+		return null;
+	}
+
+	private Tag handleOpenTag(String line) {
+		boolean selfClosing = (line.charAt(line.length() - 2) == C_SLASH);
+
+		int indexEndName = line.indexOf(C_SPACE);
+
+		if (indexEndName == -1) {
+			indexEndName = line.indexOf(C_CLOSE_ANGLE);
+
+			if (indexEndName > 0) {
+				if (selfClosing) {
+					indexEndName = line.length() - 2;
+				}
+			}
+		}
+
+		if (indexEndName != -1) {
+			return processValidLine(line, indexEndName, selfClosing);
+		}
+
+		return null;
 	}
 
 	private Tag processValidLine(String line, int indexEndName, boolean selfClosing)
